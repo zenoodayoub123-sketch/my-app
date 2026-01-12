@@ -1,4 +1,4 @@
-name: Final Success Build
+name: Ultimate Success Build
 on: [push]
 jobs:
   build:
@@ -15,14 +15,18 @@ jobs:
       - name: Install Cordova
         run: npm install -g cordova
 
-      - name: Build Android APK
+      - name: Prepare Project and Fix Code
         run: |
-          # تنظيف البيئة
-          rm -rf platforms
-          rm -rf plugins
-          # إضافة الاندرويد بنسخة تدعم Gradle الحديث والجافا 17
+          # إضافة المنصة
           cordova platform add android@12.0.0
-          # بناء التطبيق
+          
+          # هاد السطر هو "السحر" اللي رح يحل مشكلة الـ XmlParser غصب عن السيرفر
+          # بيقوم باستبدال XmlParser بـ XmlSlurper المتوافق مع جافا 17
+          find platforms/android/ -name "*.gradle" -exec sed -i 's/new XmlParser(/new XmlSlurper(/g' {} +
+          find platforms/android/ -name "*.gradle" -exec sed -i 's/.parseText(xml)/.parseText(xml).toEntity()/g' {} +
+
+      - name: Final Build
+        run: |
           cordova build android --release
           
       - name: Upload APK
