@@ -1,11 +1,11 @@
-name: Cordova Android Build (Mine)
+name: Cordova Android Build (Mine - No npm install)
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:   # شغله يدوي من GitHub لو بدك
+  workflow_dispatch:
 
 jobs:
   build-apk:
@@ -20,7 +20,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          # بدون cache هون عشان ما يفشل قبل إضافة المنصة
 
       - name: Set up Node.js LTS
         uses: actions/setup-node@v4
@@ -30,14 +29,13 @@ jobs:
       - name: Install Cordova CLI globally
         run: npm install -g cordova@latest
 
-      - name: Install npm dependencies (plugins إلخ)
-        run: npm install
+      # حذفنا npm install هون عشان ما يفشل بدون package.json
 
       - name: Remove Android platform if exists
         run: cordova platform rm android || true
 
       - name: Add latest cordova-android platform
-        run: cordova platform add android@latest   # حالياً ~14.0.x (أحدث وأكثر استقراراً)
+        run: cordova platform add android@latest
 
       - name: Build debug APK (verbose for debugging)
         run: cordova build android --debug --verbose
