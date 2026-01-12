@@ -1,11 +1,11 @@
-name: Cordova Android Build - Final Working
+name: Cordova Android Build - Fixed with @13
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # شغله يدوي من Actions
+  workflow_dispatch:
 
 jobs:
   build:
@@ -32,13 +32,13 @@ jobs:
       - name: Remove Android platform if exists
         run: cordova platform rm android || true
 
-      - name: Add Android platform
-        run: cordova platform add android@latest
+      - name: Add Android platform v13 (avoids Android 15 issues)
+        run: cordova platform add android@13.0.0
 
-      - name: Build debug APK (with verbose logs)
+      - name: Build debug APK (verbose for logs)
         run: cordova build android --debug --verbose
 
-      - name: Upload APK artifact
+      - name: Upload APK if build succeeds
         if: success()
         uses: actions/upload-artifact@v4
         with:
