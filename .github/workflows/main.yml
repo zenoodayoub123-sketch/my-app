@@ -1,65 +1,51 @@
-name: Build Cordova Android APK
+name: Cordova Android Build (Mine)
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:   # يسمح لك تشغيله يدوياً من GitHub
+  workflow_dispatch:   # شغله يدوي من GitHub لو بدك
 
 jobs:
-  build:
-    runs-on: ubuntu-latest   # أفضل خيار للـ Android builds
+  build-apk:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout the code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17   # Cordova-android الحديث يفضل/يحتاج JDK 17
+      - name: Set up JDK 17 (required for modern cordova-android)
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
+          # بدون cache هون عشان ما يفشل قبل إضافة المنصة
 
-      - name: Set up Node.js
+      - name: Set up Node.js LTS
         uses: actions/setup-node@v4
         with:
-          node-version: '20'   # أو 18 إذا عندك مشاكل توافق
+          node-version: '20'
 
-      - name: Install Cordova globally
+      - name: Install Cordova CLI globally
         run: npm install -g cordova@latest
 
-      - name: Install project dependencies
-        run: npm install   # لو عندك package.json مع plugins أو dependencies
+      - name: Install npm dependencies (plugins إلخ)
+        run: npm install
 
-      - name: Remove old Android platform (if exists)
+      - name: Remove Android platform if exists
         run: cordova platform rm android || true
 
-      - name: Add latest Android platform
-        run: cordova platform add android@latest   # أو حدد @13.0.0 أو @14.0.0 لو بدك نسخة معينة
+      - name: Add latest cordova-android platform
+        run: cordova platform add android@latest   # حالياً ~14.0.x (أحدث وأكثر استقراراً)
 
-      - name: Build debug APK   # غير لـ --release لو بدك النسخة النهائية
+      - name: Build debug APK (verbose for debugging)
         run: cordova build android --debug --verbose
 
-      # ────────────── اختياري: بناء release + توقيع (إذا عندك keystore) ──────────────
-      # - name: Build release APK
-      #   run: cordova build android --release --verbose
-      #   env:
-      #     KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-      #     KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      #     KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-
-      - name: Upload APK artifact
+      - name: Upload the generated APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug.apk
+          name: my-cordova-app-debug.apk
           path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
           retention-days: 7
-
-      # لو بدك release:
-      # - name: Upload release APK
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: app-release.apk
-      #     path: platforms/android/app/build/outputs/apk/release/app-release.apk
