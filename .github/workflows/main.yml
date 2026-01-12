@@ -1,27 +1,27 @@
-name: Cordova Android Build (Mine - No npm install)
+name: Cordova Android Build - Final Working
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
+  workflow_dispatch:  # شغله يدوي من Actions
 
 jobs:
-  build-apk:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17 (required for modern cordova-android)
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Node.js LTS
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -29,21 +29,19 @@ jobs:
       - name: Install Cordova CLI globally
         run: npm install -g cordova@latest
 
-      # حذفنا npm install هون عشان ما يفشل بدون package.json
-
       - name: Remove Android platform if exists
         run: cordova platform rm android || true
 
-      - name: Add latest cordova-android platform
+      - name: Add Android platform
         run: cordova platform add android@latest
 
-      - name: Build debug APK (verbose for debugging)
+      - name: Build debug APK (with verbose logs)
         run: cordova build android --debug --verbose
 
-      - name: Upload the generated APK
+      - name: Upload APK artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: my-cordova-app-debug.apk
+          name: my-app-debug.apk
           path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
           retention-days: 7
