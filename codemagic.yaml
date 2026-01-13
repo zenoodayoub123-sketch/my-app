@@ -1,0 +1,25 @@
+workflows:
+  ios-debug-build:
+    name: Cordova iOS Debug
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      xcode: latest
+    scripts:
+      - name: Install Cordova
+        script: |
+          npm install -g cordova@latest
+      - name: Add iOS platform
+        script: |
+          cordova platform rm ios || true
+          cordova platform add ios@latest
+      - name: Build iOS debug
+        script: |
+          cordova build ios --debug --verbose
+    artifacts:
+      - platforms/ios/build/emulator/*.app
+      - platforms/ios/build/device/*.ipa
+    publishing:
+      email:
+        recipients:
+          - your@email.com  # غيّر الإيميل هون لإيميلك الشخصي
